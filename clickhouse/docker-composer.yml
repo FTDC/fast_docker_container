@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.7.1-alpine
+    container_name: clickhouse
+    restart: always
+    networks:
+      - deng
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      # 默认配置
+      - /etc/localtime:/etc/localtime:ro
+      # 运行日志
+      - /data/clickhouse/log:/var/log/clickhouse-server
+      # 数据持久
+      - /data/clickhouse:/var/lib/clickhouse:rw
+
+networks:
+  deng:
+    external: true

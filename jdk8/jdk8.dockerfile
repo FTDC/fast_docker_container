@@ -3,7 +3,7 @@
 FROM ubuntu:latest
 
 # 维护者
-MAINTAINER author <susan@gmail.com>
+MAINTAINER author <xxx@gmail.com>
 
 # 创建一个新目录来存储jdk文件
 RUN mkdir /usr/local/java

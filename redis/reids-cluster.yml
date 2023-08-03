@@ -1,0 +1,48 @@
+version: '3'
+
+volumes:
+  redis-master-data:
+  redis-slave1-data:
+  redis-slave2-data:
+
+services:
+  redis-master: 						# 主节点的容器
+    image: redis:6.0
+    container_name: redis-master
+    volumes:
+      - ./master.conf.d:/usr/local/etc/redis
+    network_mode: host
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+  redis-slave-1: 						# 从节点1的容器
+    image: redis:6.0
+    container_name: redis-slave-1
+    volumes:
+      - ./slave1.conf.d:/usr/local/etc/redis
+    network_mode: host
+    depends_on:
+      - redis-master
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+  redis-slave-2: 						# 从节点2的容器
+    image: redis:6.0
+    container_name: redis-slave-2
+    volumes:
+      - ./redis.conf.d:/usr/local/etc/redis
+    network_mode: host
+    depends_on:
+      - redis-master
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+  # sentinel 节点
+  sentinel:
+    image: redis:6.0
+    container_name: sentinel
+    volumes:
+      - ./sentinel.conf.d:/usr/local/etc/redis
+    network_mode: host
+    depends_on:
+      - redis-master
+      - redis-slave-1
+      - redis-slave-2
+    command: ["redis-sentinel", "/usr/local/etc/redis/sentinel.conf", "--sentinel"]

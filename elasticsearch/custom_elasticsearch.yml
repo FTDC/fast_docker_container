@@ -1,0 +1,11 @@
+discovery:
+  type: single-node  # 单节点模式
+network:
+  host: 0.0.0.0    # 开放远程访问
+  # 外部访问 es 时使用的 IP 地址，如果不配置，会自动选择其中一张网卡的地址，有可能就选择错了网卡地址，导致你本机通过发布的地址也访问不了 es
+  # 查看该地址可以使用 http://127.0.0.1:9200/_nodes/http?pretty 查看
+  publish_host: 127.0.0.1
+
+xpack:
+  security:
+    enabled: false  # 关闭用户名密码保护

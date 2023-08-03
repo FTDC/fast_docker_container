@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  nginx:
+    container_name: "nginx"
+    image: nginx:alpine
+    ports:
+      - 80:8001
+      - 443:443
+    restart: always
+    volumes:
+      - ./data:/usr/share/nginx/html
