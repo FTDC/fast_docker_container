@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: elasticsearch
+    restart: no
+    environment:
+      - TZ=Asia/Shanghai
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - bootstrap.memory_lock=true
+      - SERVERNAME=elasticsearch
+      # 这里需要注意，设置下 ES 的占用内存，查询慢点没有问题，但是不限制的话，基本上很快就会因为内存不足而挂掉
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+#      - ELASTIC_PASSWORD=123456
+#      - KIBANA_PASSWORD=123456
+    volumes:
+      - ./data:/usr/share/elasticsearch/data
+      - ./plugins:/usr/share/elasticsearch/plugins #插件文件挂载
+      - ./custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+
+#    networks:
+#      - elk

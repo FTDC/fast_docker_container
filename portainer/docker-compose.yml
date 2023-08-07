@@ -1,0 +1,17 @@
+version: '3'
+services:
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    volumes:
+      - ../docker_data/portainer/run/docker.sock:/var/run/docker.sock
+      - ../docker_data/portainer/data:/data
+    ports:
+      - 9000:9000
+    networks:
+      - portainer-net
+
+networks:
+  portainer-net:
+    driver: bridge

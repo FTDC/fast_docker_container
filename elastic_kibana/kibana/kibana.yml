@@ -1,0 +1,6 @@
+server:
+  host: "0.0.0.0"    # 开放远程访问
+xpack:
+  reporting:
+    kibanaServer:
+      hostname: localhost

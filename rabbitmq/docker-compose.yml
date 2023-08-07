@@ -1,0 +1,171 @@
+version: "3"
+services:
+
+  rabbitmq1:
+    container_name: rabbitmq1
+    # image: rabbitmq:management-alpine # 官方版，不能在 environment 内添加自动加入集群节点代码
+    image: bijukunjummen/rabbitmq-server:3.7.0 # 集群版
+    hostname: rabbitmq1
+    # command: /bin/bash -c && "rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl start_app"
+    environment:
+      # 用户名
+      - RABBITMQ_DEFAULT_USER=admin
+      # 用户密码
+      - RABBITMQ_DEFAULT_PASS=admin
+      # 配置相同Erlang Cookie，因为RabbitMQ是用Erlang实现的，Erlang Cookie相当于不同节点之间相互通讯的秘钥，Erlang节点通过交换Erlang Cookie获得认证。
+      # - RABBITMQ_ERLANG_COOKIE=localrabbitcookie
+      # 节点名称
+      # - RABBITMQ_NODENAME=rabbitmq1
+
+    # volumes:
+    #   - ./rabbitmq1:/var/lib/rabbitmq
+    # 心跳检测
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://127.0.0.1:5672"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    ports:
+      # web管理界面端口
+      - "15672:15672"
+      # 服务端口
+      - "5672:5672"
+    networks:
+      - net-pay-network
+      - nodeframe-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    restart: always
+
+  rabbitmq2:
+    container_name: rabbitmq2
+    # image: rabbitmq:management-alpine # 官方版，不能在 environment 内添加自动加入集群节点代码
+    image: bijukunjummen/rabbitmq-server:3.7.0 # 集群版
+    hostname: rabbitmq2
+    # command: /bin/bash -c && "rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl join_cluster --ram rabbitmq1@rabbitmq1 && rabbitmqctl start_app"
+    environment:
+      # 用户名
+      - RABBITMQ_DEFAULT_USER=admin
+      # 用户密码
+      - RABBITMQ_DEFAULT_PASS=admin
+      # 配置相同Erlang Cookie，因为RabbitMQ是用Erlang实现的，Erlang Cookie相当于不同节点之间相互通讯的秘钥，Erlang节点通过交换Erlang Cookie获得认证。
+      # - RABBITMQ_ERLANG_COOKIE=localrabbitcookie
+      # 节点名称
+      # - RABBITMQ_NODENAME=rabbitmq2
+
+      # 以下配置为用户自定义镜像支持的命令，官方镜像不支持
+      # https://github.com/bijukunjummen/docker-rabbitmq-cluster
+      - CLUSTERED=true
+      - CLUSTER_WITH=rabbitmq1
+      - RAM_NODE=true
+
+    # volumes:
+    #   - ./rabbitmq2:/var/lib/rabbitmq
+    links:
+      - rabbitmq1
+    depends_on:
+      - rabbitmq1
+    ports:
+      # web管理界面端口
+      - "15673:15672"
+      # 服务端口
+      - "5673:5672"
+    networks:
+      - net-pay-network
+      - nodeframe-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    restart: always
+
+  rabbitmq3:
+    container_name: rabbitmq3
+    # image: rabbitmq:management-alpine # 官方版，不能在 environment 内添加自动加入集群节点代码
+    image: bijukunjummen/rabbitmq-server:3.7.0 # 集群版
+    hostname: rabbitmq3
+    # command: /bin/bash -c && "rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl join_cluster --ram rabbitmq1@rabbitmq1 && rabbitmqctl start_app"
+    environment:
+      # 用户名
+      - RABBITMQ_DEFAULT_USER=admin
+      # 用户密码
+      - RABBITMQ_DEFAULT_PASS=admin
+      # 配置相同Erlang Cookie，因为RabbitMQ是用Erlang实现的，Erlang Cookie相当于不同节点之间相互通讯的秘钥，Erlang节点通过交换Erlang Cookie获得认证。
+      # - RABBITMQ_ERLANG_COOKIE=localrabbitcookie
+      # 节点名称
+      # - RABBITMQ_NODENAME=rabbitmq3
+
+      # 以下配置为用户自定义镜像支持的命令，官方镜像不支持
+      # https://github.com/bijukunjummen/docker-rabbitmq-cluster
+      - CLUSTERED=true
+      - CLUSTER_WITH=rabbitmq1
+      - RAM_NODE=true
+
+      # volumes:
+      #   - ./rabbitmq3:/var/lib/rabbitmq
+    links:
+      - rabbitmq1
+    depends_on:
+      - rabbitmq1
+    ports:
+      # web管理界面端口
+      - "15674:15672"
+      # 服务端口
+      - "5674:5672"
+    networks:
+      - net-pay-network
+      - nodeframe-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    restart: always
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.13
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+      - 8880:8880
+      - 9990:9990
+    networks:
+      - net-pay-network
+      - nodeframe-network
+    volumes:
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # net-pay web端编译后文件数据卷
+      - netpay-web-dist:/usr/share/nginx/html/net-pay
+      # nodeframe web端编译后文件数据卷
+      - nodeframe-web-dist:/usr/share/nginx/html/nodeframe
+
+  # docker web管理平台 http://localhost:9000
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    volumes:
+      - ./docker_data/portainer/data:/data
+    ports:
+      - 9000:9000
+    networks:
+      - net-pay-network
+      - nodeframe-network
+    restart: always
+
+networks:
+  net-pay-network:
+    driver: bridge
+  nodeframe-network:
+    driver: bridge
+
+volumes:
+  # net-pay web端编译后文件数据卷
+  netpay-web-dist:
+  # nodeframe web端编译后文件数据卷
+  nodeframe-web-dist:

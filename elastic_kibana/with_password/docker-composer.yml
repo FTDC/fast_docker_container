@@ -1,0 +1,41 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: es890
+    environment:
+      - "cluster.name=elasticsearch" #设置集群名称为elasticsearch
+      - "discovery.type=single-node" #以单一节点模式启动
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m" #设置使用jvm内存大小
+#      - "ELASTIC_PASSWORD=123456"    #密码
+#      - "xpack.security.enabled=false"
+    volumes:
+      - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins #插件文件挂载
+      - ./elasticsearch/data:/usr/share/elasticsearch/data #数据文件挂载
+    ports:
+      - 9200:9200
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.0
+    container_name: kibana890
+    depends_on:
+      - elasticsearch #kibana在elasticsearch启动之后再启动
+    environment:
+      - SERVER_NAME=kibana
+      - ELASTICSEARCH_HOSTS=http://192.168.120.177:9200
+#      - "elasticsearch.hosts=http://192.168.120.177:9200" #设置访问elasticsearch的地址
+#      - "elasticsearch.username=elastic" #设置访问elasticsearch的地址
+#      - "elasticsearch.password=123456" #设置访问elasticsearch的地址
+#      - "ELASTICSEARCH_USERNAME=elastic"
+#      - "ELASTICSEARCH_PASSWORD=123456"    #elastic密码
+      - "I18N_LOCALE=zh-CN"                 #中文
+    ports:
+      - 5601:5601
+#  logstash:
+#    image: docker.elastic.co/logstash/logstash:8.9.0
+#    container_name: logstash
+#    volumes:
+#      - /opt/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#    depends_on:
+#      - elasticsearch #logstash在elasticsearch启动之后再启动
+#    ports:
+#      - 4560:4560

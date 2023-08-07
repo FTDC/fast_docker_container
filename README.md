@@ -235,4 +235,6 @@ docker info | grep "Docker Root Dir"
 systemctl stop docker
 ```
 
+> 参考文献
+https://github.com/bitnami/containers/tree/main/bitnami
 
